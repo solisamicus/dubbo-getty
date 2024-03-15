@@ -22,9 +22,9 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
 	"net"
 	"net/http"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -449,9 +449,9 @@ func (s *server) runWSSEventLoop(newSession NewSessionCallback) {
 		}
 
 		if s.caCert != "" {
-			certPem, err = ioutil.ReadFile(s.caCert)
+			certPem, err = os.ReadFile(s.caCert)
 			if err != nil {
-				panic(fmt.Errorf("ioutil.ReadFile(certFile{%s}) = err:%+v", s.caCert, perrors.WithStack(err)))
+				panic(fmt.Errorf("os.ReadFile(certFile{%s}) = err:%+v", s.caCert, perrors.WithStack(err)))
 			}
 			certPool = x509.NewCertPool()
 			if ok := certPool.AppendCertsFromPEM(certPem); !ok {
