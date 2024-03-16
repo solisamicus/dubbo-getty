@@ -20,6 +20,7 @@ package getty
 import (
 	"bytes"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"io"
 	"net"
@@ -55,6 +56,8 @@ const (
 	defaultWSSessionName  = "ws-session"
 	defaultWSSSessionName = "wss-session"
 	outputFormat          = "session %s, Read Bytes: %d, Write Bytes: %d, Read Pkgs: %d, Write Pkgs: %d"
+
+	defaultTLSHandshakeTimeout = time.Second * 3
 )
 
 var defaultTimerWheel *gxtime.TimerWheel
@@ -636,6 +639,18 @@ func (s *session) handleTCPPackage() error {
 	pktBuf = gxbytes.NewBuffer(nil)
 
 	conn = s.Connection.(*gettyTCPConn)
+	if tlsConn, ok := conn.conn.(*tls.Conn); ok {
+		tlsHandshaketime := defaultTLSHandshakeTimeout
+		if s.ReadTimeout() > 0 {
+			tlsHandshaketime = s.ReadTimeout()
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), tlsHandshaketime)
+		defer cancel()
+		if err := tlsConn.HandshakeContext(ctx); err != nil {
+			log.Errorf("[tlsConn.HandshakeContext] = error:%+v", err)
+			return perrors.Wrap(err, "tlsConn.HandshakeContext")
+		}
+	}
 	for {
 		if s.IsClosed() {
 			err = nil
