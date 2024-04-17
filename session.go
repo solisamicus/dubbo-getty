@@ -27,13 +27,12 @@ import (
 	"runtime"
 	"sync"
 	"time"
-)
 
-import (
 	gxbytes "github.com/dubbogo/gost/bytes"
-	gxcontext "github.com/dubbogo/gost/context"
-	gxtime "github.com/dubbogo/gost/time"
 
+	gxcontext "github.com/dubbogo/gost/context"
+
+	gxtime "github.com/dubbogo/gost/time"
 	"github.com/gorilla/websocket"
 
 	perrors "github.com/pkg/errors"
@@ -671,6 +670,8 @@ func (s *session) handleTCPPackage() error {
 				}
 				if perrors.Cause(err) == io.EOF {
 					log.Infof("%s, session.conn read EOF, client send over, session exit", s.sessionToken())
+					//when read EOF, means that the peer has closed the connection, stop to reconnect to maintain the connection pool.
+					s.SetAttribute(ignoreReconnectKey, true)
 					err = nil
 					exit = true
 					if bufLen != 0 {
@@ -858,8 +859,9 @@ func (s *session) stop() {
 				conn.SetWriteDeadline(now.Add(s.WriteTimeout()))
 			}
 			close(s.done)
-			c := s.GetAttribute(sessionClientKey)
-			if clt, ok := c.(*client); ok {
+			clt, cltFound := s.GetAttribute(sessionClientKey).(*client)
+			ignoreReconnect, flagFound := s.GetAttribute(ignoreReconnectKey).(bool)
+			if cltFound && flagFound && !ignoreReconnect {
 				clt.reConnect()
 			}
 		})
