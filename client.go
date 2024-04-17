@@ -56,6 +56,10 @@ var (
 	ignoreReconnectKey = "ignore-reconnect"
 )
 
+var (
+	num, max, times, interval int
+	maxDuraion int64
+)
 type Client interface {
 	EndPoint
 }
@@ -423,8 +427,6 @@ func (c *client) RunEventLoop(newSession NewSessionCallback) {
 
 // a for-loop connect to make sure the connection pool is valid
 func (c *client) reConnect() {
-	var num, max, times, interval int
-	var maxDuraion int64
 	max = c.number
 	interval = c.reconnectInterval
 	if interval == 0 {
@@ -437,7 +439,8 @@ func (c *client) reConnect() {
 		}
 
 		num = c.sessionNum()
-		if max <= num || max < times { //Exit when the number of connection pools is sufficient or the reconnection times exceeds the connections numbers.
+		if max <= num || max < times { 
+			//Exit when the number of connection pools is sufficient or the reconnection times exceeds the connections numbers.
 			break
 		}
 		c.connect()
