@@ -58,8 +58,9 @@ var (
 
 var (
 	num, max, times, interval int
-	maxDuraion int64
+	maxDuraion                int64
 )
+
 type Client interface {
 	EndPoint
 }
