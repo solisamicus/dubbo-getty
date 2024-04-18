@@ -425,7 +425,7 @@ func (c *client) RunEventLoop(newSession NewSessionCallback) {
 func (c *client) reConnect() {
 	var (
 		num, max, times, interval int
-		maxDuraion                int64
+		maxDuration               int64
 	)
 	max = c.number
 	interval = c.reconnectInterval
@@ -446,11 +446,11 @@ func (c *client) reConnect() {
 		c.connect()
 		times++
 		if times > maxTimes {
-			maxDuraion = int64(maxTimes) * int64(interval)
+			maxDuration = int64(maxTimes) * int64(interval)
 		} else {
-			maxDuraion = int64(times) * int64(interval)
+			maxDuration = int64(times) * int64(interval)
 		}
-		<-gxtime.After(time.Duration(maxDuraion))
+		<-gxtime.After(time.Duration(maxDuration))
 	}
 }
 
