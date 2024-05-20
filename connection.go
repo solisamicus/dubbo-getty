@@ -628,7 +628,7 @@ func (w *gettyWSConn) writePong(message []byte) error {
 // close websocket connection
 func (w *gettyWSConn) CloseConn(waitSec int) {
 	w.updateWriteDeadline()
-	w.conn.WriteMessage(websocket.CloseMessage, []byte("bye-bye!!!"))
+	w.conn.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, "bye-bye!!!"))
 	conn := w.conn.UnderlyingConn()
 	if tcpConn, ok := conn.(*net.TCPConn); ok {
 		tcpConn.SetLinger(waitSec)

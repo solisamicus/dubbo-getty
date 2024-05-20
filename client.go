@@ -52,7 +52,8 @@ var (
 	sessionClientKey   = "session-client-owner"
 	connectPingPackage = []byte("connect-ping")
 
-	clientID = EndPointID(0)
+	clientID           = EndPointID(0)
+	ignoreReconnectKey = "ignore-reconnect"
 )
 
 type Client interface {
@@ -397,6 +398,7 @@ func (c *client) connect() {
 			c.ssMap[ss] = struct{}{}
 			c.Unlock()
 			ss.SetAttribute(sessionClientKey, c)
+			ss.SetAttribute(ignoreReconnectKey, false)
 			break
 		}
 		// don't distinguish between tcp connection and websocket connection. Because
@@ -421,8 +423,10 @@ func (c *client) RunEventLoop(newSession NewSessionCallback) {
 
 // a for-loop connect to make sure the connection pool is valid
 func (c *client) reConnect() {
-	var num, max, times, interval int
-
+	var (
+		num, max, times, interval int
+		maxDuration               int64
+	)
 	max = c.number
 	interval = c.reconnectInterval
 	if interval == 0 {
@@ -435,15 +439,18 @@ func (c *client) reConnect() {
 		}
 
 		num = c.sessionNum()
-		if max <= num {
+		if max <= num || max < times {
+			//Exit when the number of connection pools is sufficient or the reconnection times exceeds the connections numbers.
 			break
 		}
 		c.connect()
 		times++
-		if maxTimes < times {
-			times = maxTimes
+		if times > maxTimes {
+			maxDuration = int64(maxTimes) * int64(interval)
+		} else {
+			maxDuration = int64(times) * int64(interval)
 		}
-		<-gxtime.After(time.Duration(int64(times) * int64(interval)))
+		<-gxtime.After(time.Duration(maxDuration))
 	}
 }
 
@@ -457,6 +464,7 @@ func (c *client) stop() {
 			c.Lock()
 			for s := range c.ssMap {
 				s.RemoveAttribute(sessionClientKey)
+				s.RemoveAttribute(ignoreReconnectKey)
 				s.Close()
 			}
 			c.ssMap = nil
