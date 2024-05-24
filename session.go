@@ -368,7 +368,7 @@ func (s *session) sessionToken() string {
 		s.name, s.EndPoint().EndPointType(), s.ID(), s.LocalAddr(), s.RemoteAddr())
 }
 
-func (s *session) WritePkg(pkg interface{}, timeout time.Duration) (int, int, error) {
+func (s *session) WritePkg(pkg interface{}, timeout time.Duration) (pkgBytesLenth int, successCount int, err error) {
 	if pkg == nil {
 		return 0, 0, fmt.Errorf("@pkg is nil")
 	}
@@ -381,7 +381,9 @@ func (s *session) WritePkg(pkg interface{}, timeout time.Duration) (int, int, er
 			const size = 64 << 10
 			rBuf := make([]byte, size)
 			rBuf = rBuf[:runtime.Stack(rBuf, false)]
-			log.Errorf("[session.WritePkg] panic session %s: err=%s\n%s", s.sessionToken(), r, rBuf)
+			errMsg := fmt.Sprintf("[session.WritePkg] panic session %s: err=%s\n%s", s.sessionToken(), r, rBuf)
+			log.Error(errMsg)
+			err = perrors.WithStack(fmt.Errorf(errMsg))
 		}
 	}()
 
@@ -407,13 +409,12 @@ func (s *session) WritePkg(pkg interface{}, timeout time.Duration) (int, int, er
 	if 0 < timeout {
 		s.Connection.SetWriteTimeout(timeout)
 	}
-	var succssCount int
-	succssCount, err = s.Connection.Send(pkg)
+	successCount, err = s.Connection.Send(pkg)
 	if err != nil {
 		log.Warnf("%s, [session.WritePkg] @s.Connection.Write(pkg:%#v) = err:%+v", s.Stat(), pkg, err)
-		return len(pkgBytes), succssCount, perrors.WithStack(err)
+		return len(pkgBytes), successCount, perrors.WithStack(err)
 	}
-	return len(pkgBytes), succssCount, nil
+	return len(pkgBytes), successCount, nil
 }
 
 // WriteBytes for codecs
