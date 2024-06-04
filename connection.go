@@ -489,8 +489,9 @@ func (u *gettyUDPConn) CloseConn(_ int) {
 
 type gettyWSConn struct {
 	gettyConn
-	conn *websocket.Conn
-	lock sync.Mutex
+	writeLock sync.Mutex
+	readLock  sync.Mutex
+	conn      *websocket.Conn
 }
 
 // create websocket connection
@@ -565,7 +566,7 @@ func (w *gettyWSConn) handlePong(string) error {
 func (w *gettyWSConn) recv() ([]byte, error) {
 	// Pls do not set read deadline when using ReadMessage. AlexStocks 20180310
 	// gorilla/websocket/conn.go:NextReader will always fail when got a timeout error.
-	_, b, e := w.conn.ReadMessage() // the first return value is message type.
+	_, b, e := w.threadSafeReadMessage() // the first return value is message type.
 	if e == nil {
 		w.readBytes.Add((uint32)(len(b)))
 	} else {
@@ -641,10 +642,21 @@ func (w *gettyWSConn) CloseConn(waitSec int) {
 
 // uses a mutex to ensure that only one thread can send a message at a time, preventing race conditions.
 func (w *gettyWSConn) threadSafeWriteMessage(messageType int, data []byte) error {
-	w.lock.Lock()
-	defer w.lock.Unlock()
+	w.writeLock.Lock()
+	defer w.writeLock.Unlock()
 	if err := w.conn.WriteMessage(messageType, data); err != nil {
 		return err
 	}
 	return nil
+}
+
+// uses a mutex to ensure that only one thread can read a message at a time, preventing race conditions.
+func (w *gettyWSConn) threadSafeReadMessage() (int, []byte, error) {
+	w.readLock.Lock()
+	defer w.readLock.Unlock()
+	messageType, readBytes, err := w.conn.ReadMessage()
+	if err != nil {
+		return messageType, nil, err
+	}
+	return messageType, readBytes, nil
 }
