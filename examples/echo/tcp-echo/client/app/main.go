@@ -117,7 +117,7 @@ func newSession(session getty.Session) error {
 func initClient() {
 	clientOpts := []getty.ClientOption{getty.WithServerAddress(gxnet.HostAddress(conf.ServerHost, conf.ServerPort))}
 	clientOpts = append(clientOpts, getty.WithClientTaskPool(taskPool))
-
+	clientOpts = append(clientOpts, getty.WithReconnectAttempts(conf.GettySessionParam.TcpMaxReconnectAttempts))
 	if conf.ConnectionNum != 0 {
 		clientOpts = append(clientOpts, getty.WithConnectionNumber(conf.ConnectionNum))
 	}

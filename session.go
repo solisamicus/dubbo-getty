@@ -27,13 +27,12 @@ import (
 	"runtime"
 	"sync"
 	"time"
-)
 
-import (
 	gxbytes "github.com/dubbogo/gost/bytes"
-	gxcontext "github.com/dubbogo/gost/context"
-	gxtime "github.com/dubbogo/gost/time"
 
+	gxcontext "github.com/dubbogo/gost/context"
+
+	gxtime "github.com/dubbogo/gost/time"
 	"github.com/gorilla/websocket"
 
 	perrors "github.com/pkg/errors"
@@ -856,8 +855,12 @@ func (s *session) stop() {
 			// let read/Write timeout asap
 			now := time.Now()
 			if conn := s.Conn(); conn != nil {
-				conn.SetReadDeadline(now.Add(s.ReadTimeout()))
-				conn.SetWriteDeadline(now.Add(s.WriteTimeout()))
+				if err := conn.SetReadDeadline(now.Add(s.ReadTimeout())); err != nil {
+					log.Warnf("failed to set read deadline: %+v", err)
+				}
+				if err := conn.SetWriteDeadline(now.Add(s.WriteTimeout())); err != nil {
+					log.Warnf("failed to set write deadline: %+v", err)
+				}
 			}
 			close(s.done)
 			clt, cltFound := s.GetAttribute(sessionClientKey).(*client)

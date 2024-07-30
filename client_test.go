@@ -115,6 +115,7 @@ func TestTCPClient(t *testing.T) {
 		WithServerAddress(addr.String()),
 		WithReconnectInterval(5e8),
 		WithConnectionNumber(1),
+		WithReconnectAttempts(10),
 	)
 	assert.NotNil(t, clt)
 	assert.True(t, clt.ID() > 0)
