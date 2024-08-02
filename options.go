@@ -100,10 +100,10 @@ func WithServerTlsConfigBuilder(tlsConfigBuilder TlsConfigBuilder) ServerOption 
 type ClientOption func(*ClientOptions)
 
 type ClientOptions struct {
-	addr              string
-	number            int
-	reconnectInterval int // reConnect Interval
-
+	addr                 string
+	number               int
+	reconnectInterval    int // reConnect Interval
+	maxReconnectAttempts int // max reconnect attempts
 	// tls
 	sslEnabled       bool
 	tlsConfigBuilder TlsConfigBuilder
@@ -166,5 +166,14 @@ func WithClientSslEnabled(sslEnabled bool) ClientOption {
 func WithClientTlsConfigBuilder(tlsConfigBuilder TlsConfigBuilder) ClientOption {
 	return func(o *ClientOptions) {
 		o.tlsConfigBuilder = tlsConfigBuilder
+	}
+}
+
+// WithReconnectAttempts @maxReconnectAttempts is max reconnect attempts.
+func WithReconnectAttempts(maxReconnectAttempts int) ClientOption {
+	return func(o *ClientOptions) {
+		if 0 < maxReconnectAttempts {
+			o.maxReconnectAttempts = maxReconnectAttempts
+		}
 	}
 }
