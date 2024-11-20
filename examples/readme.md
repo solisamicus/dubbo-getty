@@ -19,13 +19,20 @@ The server sends back messages from client. The client sends messages to the ech
 To run the example, start the server:
 
 ```bash
-$ cd echo/tcp-echo/server/ && sh assembly/linux/test.sh && cd target/linux/echo_server-0.3.07-20161009-1632-test/ && sh bin/load.sh start
+$ cd echo/tcp-echo/server/ && sh assembly/linux/test.sh
+// your_version is the version set in version.go, current-time is the time when you compile the code.
+// please replace your_version and current-time with the real version and time.
+$ cd target/linux/echo_server-${your-version}-${current-time}-test/ && sh bin/load_echo_server.sh start
+
 ```
 
 Next, start the client:
 
 ```bash
-$ cd echo/tcp-echo/client/ && sh assembly/linux/test.sh && cd target/linux/echo_client-0.3.07-20161009-1634-test/ && sh bin/load.sh start
+$ cd echo/tcp-echo/client/ && sh assembly/linux/test.sh
+// your_version is the version set in version.go, current-time is the time when you compile the code.
+// please replace your_version and current-time with the real version and time.
+$ cd target/linux/echo_client-${your-version}-${current-time}-test/ && sh bin/load_echo_client.sh start
 ```
 
 ## getty example2: ws-echo ##
@@ -38,13 +45,19 @@ The server sends back messages from client. The client sends messages to the ech
 To run the example, start the server:
 
 ```bash
-$ cd echo/ws-echo/server/ && sh assembly/linux/test.sh && cd target/linux/echo_server-0.3.07-20161009-1632-test/ && sh bin/load.sh start
+$ cd echo/ws-echo/server/ && sh assembly/linux/test.sh
+// your_version is the version set in version.go, current-time is the time when you compile the code.
+// please replace your_version and current-time with the real version and time.
+$ cd target/linux/echo_server-${your-version}-${current-time}-test/ && sh bin/load_echo_server.sh start
 ```
 
 Next, start the go client:
 
 ```bash
-$ cd echo/ws-echo/client/ && sh assembly/linux/test.sh && cd target/linux/echo_client-0.3.07-20161009-1634-test/ && sh bin/load.sh start
+$ cd echo/ws-echo/client/ && sh assembly/linux/test.sh
+// your_version is the version set in version.go, current-time is the time when you compile the code.
+// please replace your_version and current-time with the real version and time.
+$ cd target/linux/echo_client-${your-version}-${current-time}-test/ && sh bin/load_echo_client.sh start
 ```
 
 Or start the js client:
